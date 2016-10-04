@@ -59,6 +59,12 @@ function update(deltaTime)
 {
     ball.pos.x += ball.vel.x * deltaTime;
     ball.pos.y += ball.vel.y * deltaTime;
+
+    // Flip velocities when the ball hits the edge
+    if (ball.pos.x + ball.size.x > canvas.width || ball.pos.x < 0)
+        ball.vel.x = -ball.vel.x;
+    if (ball.pos.y + ball.size.y > canvas.height || ball.pos.y < 0)
+        ball.vel.y = -ball.vel.y;
 }
 
 // Game render function
@@ -85,8 +91,8 @@ const context = canvas.getContext("2d");
 const ball = new Ball();
 
 // Move ball
-ball.vel.x = 50; // In pixels per second
-ball.vel.y = 70;
+ball.vel.x = 100; // In pixels per second
+ball.vel.y = 120;
 
 ball.pos.x = 40;
 ball.pos.y = 55;
