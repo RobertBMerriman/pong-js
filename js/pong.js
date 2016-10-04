@@ -35,6 +35,45 @@ class Ball extends Rect
 }
 
 
+//// Functions
+
+// Timings
+let lastTime;
+
+function callback(millis)
+{
+    if (lastTime)
+    {
+        update((millis - lastTime) / 1000);
+        render();
+    }
+
+    lastTime = millis;
+    requestAnimationFrame(callback);
+}
+
+
+
+// Game update function (`deltaTime` is in seconds)
+function update(deltaTime)
+{
+    ball.pos.x += ball.vel.x * deltaTime;
+    ball.pos.y += ball.vel.y * deltaTime;
+}
+
+// Game render function
+function render()
+{
+    // Fill background black
+    context.fillStyle = "#000";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+
+    // Draw ball
+    context.fillStyle = "#fff";
+    context.fillRect(ball.pos.x, ball.pos.y, ball.size.x, ball.size.y);
+}
+
 
 //// Program start
 
@@ -42,17 +81,16 @@ class Ball extends Rect
 const canvas = document.getElementById("pong");
 const context = canvas.getContext("2d");
 
-// Fill background black
-context.fillStyle = "#000";
-context.fillRect(0, 0, canvas.width, canvas.height);
-
 // Instantiate ball
 const ball = new Ball();
 
 // Move ball
+ball.vel.x = 50; // In pixels per second
+ball.vel.y = 70;
+
 ball.pos.x = 40;
 ball.pos.y = 55;
 
-// Draw ball
-context.fillStyle = "#fff";
-context.fillRect(ball.pos.x, ball.pos.y, ball.size.x, ball.size.y);
+
+// Start requestAnimationFrame callback game loop
+requestAnimationFrame(callback);
