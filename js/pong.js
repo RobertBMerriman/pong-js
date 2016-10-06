@@ -18,36 +18,45 @@ class Vector
 
 class Rect
 {
-    constructor(width, height)
+    constructor(width, height, posVec)
     {
-        this.pos = new Vector();
+        this.pos = posVec;
         this.size = new Vector(width, height); // where `x` of the `Vector` is the `width` and `y` is the `height`
     }
 
     get left()
     {
-        return this.pos.x;
+        return this.pos.x - this.size.x / 2;
     }
     get right()
     {
-        return this.pos.x + this.size.x ;
+        return this.pos.x + this.size.x / 2;
     }
     get top()
     {
-        return this.pos.y;
+        return this.pos.y - this.size.y / 2;
     }
     get bottom()
     {
-        return this.pos.y + this.size.y;
+        return this.pos.y + this.size.y / 2;
     }
 }
 
 class Ball extends Rect
 {
-    constructor()
+    constructor(posVec, velVec)
     {
-        super(10, 10);
-        this.vel = new Vector();
+        super(10, 10, posVec);
+        this.vel = velVec;
+    }
+}
+
+class Player extends Rect
+{
+    constructor(posVec)
+    {
+        super(20, 120, posVec);
+        this.score = 0;
     }
 }
 
@@ -59,12 +68,14 @@ class Pong
         this._canvas = canvas;
         this._context = canvas.getContext("2d");
 
-        // Instantiate and move ball
-        this.ball = new Ball();
-        this.ball.vel.x = 100; // In pixels per second
-        this.ball.vel.y = 120;
-        this.ball.pos.x = 40;
-        this.ball.pos.y = 55;
+        // Instantiate ball with position and
+        this.ball = new Ball(new Vector(40, 55), new Vector(100, 120));
+
+        // Set up players array
+        this.players = [
+            new Player(new Vector(30, this._canvas.height / 2)),
+            new Player(new Vector(this._canvas.width - 30, this._canvas.height / 2))
+        ];
 
         // Create requestAnimationFrame callback game loop
         let lastTime;
@@ -111,12 +122,14 @@ class Pong
 
         // Draw ball
         this.drawRect(this.ball);
+        // Draw all players in array
+        this.players.forEach((player) => this.drawRect(player)); // Arrow function
     }
 
     drawRect(rect)
     {
         this._context.fillStyle = "#fff";
-        this._context.fillRect(this.ball.pos.x, this.ball.pos.y, this.ball.size.x, this.ball.size.y);
+        this._context.fillRect(rect.left, rect.top, rect.size.x, rect.size.y);
     }
 }
 
@@ -125,4 +138,5 @@ class Pong
 
 // Get canvas
 const canvas = document.getElementById("pong");
+// Start game
 const pong = new Pong(canvas);
