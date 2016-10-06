@@ -86,6 +86,9 @@ class Pong
     // Game update method (`deltaTime` is in seconds)
     update(deltaTime)
     {
+        if (deltaTime > 0.5) // If over half a second skip frame because something unwanted has happened eg lost focus etc
+            return;
+
         this.ball.pos.x += this.ball.vel.x * deltaTime;
         this.ball.pos.y += this.ball.vel.y * deltaTime;
 
