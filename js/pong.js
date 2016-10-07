@@ -69,9 +69,11 @@ class Ball extends Rect
 
 class Player extends Rect
 {
-    constructor(posVec)
+    constructor(posVec, leftPlayer)
     {
         super(20, 100, posVec);
+        this.leftPlayer = leftPlayer;
+        this.rightPlayer = !leftPlayer;
         this.score = 0;
     }
 }
@@ -89,8 +91,8 @@ class Pong
 
         // Set up players array
         this.players = [
-            new Player(new Vector(30, this._canvas.height / 2)),
-            new Player(new Vector(this._canvas.width - 30, this._canvas.height / 2))
+            new Player(new Vector(30, this._canvas.height / 2), true),
+            new Player(new Vector(this._canvas.width - 30, this._canvas.height / 2), false)
         ];
 
         // Create requestAnimationFrame callback game loop
@@ -148,7 +150,7 @@ class Pong
             if (player.left < this.ball.right  && player.right  > this.ball.left &&
                 player.top  < this.ball.bottom && player.bottom > this.ball.top)
             {
-                this.ball.vel.x = -this.ball.vel.x;
+                this.ball.vel.x = (player.leftPlayer ? Math.abs(this.ball.vel.x) : -Math.abs(this.ball.vel.x));
             }
         });
     }
