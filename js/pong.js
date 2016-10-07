@@ -99,8 +99,15 @@ class Pong
         {
             if (lastTime)
             {
-                this.update((millis - lastTime) / 1000);
-                this.render();
+                let deltaTime = (millis - lastTime) / 1000;
+
+                // If over half a second skip frame because something unwanted has happened eg lost focus etc
+                if (deltaTime < 0.5)
+                {
+                    this.update(deltaTime);
+                    this.collisionDetection();
+                    this.render();
+                }
             }
 
             lastTime = millis;
@@ -113,29 +120,36 @@ class Pong
     // Game update method (`deltaTime` is in seconds)
     update(deltaTime)
     {
-        if (deltaTime > 0.5) // If over half a second skip frame because something unwanted has happened eg lost focus etc
-            return;
-
         this.ball.pos.x += this.ball.vel.x * deltaTime;
         this.ball.pos.y += this.ball.vel.y * deltaTime;
 
+
+        // Player 2 """"AI""""
+        this.players[1].pos.y += this.ball.vel.y * deltaTime * 0.65; // Move the paddle at a fraction of the ball speed
+    }
+
+    collisionDetection()
+    {
         // Flip velocities when the ball hits the edge
         if (this.ball.left < 0 || this.ball.right  > this._canvas.width)
             this.ball.vel.x = -this.ball.vel.x;
         if (this.ball.top  < 0 || this.ball.bottom > this._canvas.height)
             this.ball.vel.y = -this.ball.vel.y;
 
-        //console.log("Ball x: " + Math.floor(this.ball.pos.x) + "; Ball y: " + Math.floor(this.ball.pos.y));
-
-        // Player 2 """"AI""""
-        this.players[1].pos.y += this.ball.vel.y * deltaTime * 0.65;
-
-        // Don't allow paddles clip edges
+        // Paddle checks
         this.players.forEach((player) => {
-        if (player.top < 0)
-            player.top = 0;
-        if (player.bottom > this._canvas.height)
-            player.bottom = this._canvas.height;
+            // Don't allow paddles to clip edges
+            if (player.top < 0)
+                player.top = 0;
+            if (player.bottom > this._canvas.height)
+                player.bottom = this._canvas.height;
+
+            // Paddle ball collision checks
+            if (player.left < this.ball.right  && player.right  > this.ball.left &&
+                player.top  < this.ball.bottom && player.bottom > this.ball.top)
+            {
+                this.ball.vel.x = -this.ball.vel.x;
+            }
         });
     }
 
@@ -165,10 +179,10 @@ class Pong
 
 // Get canvas
 const canvas = document.getElementById("pong");
+
 // Start game
 const pong = new Pong(canvas);
 
 canvas.addEventListener('mousemove', (event) => {
-    // TODO limit speed a little
-    pong.players[0].pos.y += (event.offsetY - pong.players[0].pos.y) * 0.3;
+    pong.players[0].pos.y += (event.offsetY - pong.players[0].pos.y) * 0.3; // Limit movement speed a little
 });
