@@ -18,7 +18,7 @@ class Vector
 
 class Rect
 {
-    constructor(width, height, posVec)
+    constructor(width, height, posVec = new Vector())
     {
         this.pos = posVec;
         this.size = new Vector(width, height); // where `x` of the `Vector` is the `width` and `y` is the `height`
@@ -56,11 +56,39 @@ class Rect
     {
         this.pos.y = pos - this.size.y / 2;
     }
+    get position()
+    {
+        return this.pos;
+    }
+    set position(posVec)
+    {
+        this.pos.x = posVec.x;
+        this.pos.y = posVec.y;
+    }
+    setPosition(x, y)
+    {
+        this.pos.x = x;
+        this.pos.y = y;
+    }
+    get velocity()
+    {
+        return this.vel;
+    }
+    set velocity(velVec)
+    {
+        this.vel.x = velVec.x;
+        this.vel.y = velVec.y;
+    }
+    setVelocity(x, y)
+    {
+        this.vel.x = x;
+        this.vel.y = y;
+    }
 }
 
 class Ball extends Rect
 {
-    constructor(posVec, velVec)
+    constructor(posVec, velVec = new Vector())
     {
         super(10, 10, posVec);
         this.vel = velVec;
@@ -86,8 +114,8 @@ class Pong
         this._canvas = canvas;
         this._context = canvas.getContext("2d");
 
-        // Instantiate ball with position and
-        this.ball = new Ball(new Vector(40, 55), new Vector(100, 120));
+        // Instantiate ball
+        this.ball = new Ball();
 
         // Set up players array
         this.players = [
@@ -117,6 +145,9 @@ class Pong
         };
         // Start game callback loop
         requestAnimationFrame(callback);
+
+        // Set ball to initial position
+        this.reset();
     }
 
     // Game update method (`deltaTime` is in seconds)
@@ -134,7 +165,12 @@ class Pong
     {
         // Flip velocities when the ball hits the edge
         if (this.ball.left < 0 || this.ball.right  > this._canvas.width)
+        {
+            const playerId = this.ball.vel.x > 0 | 0; // If travelling to the right (positive) when a wall is hit, right player has missed the ball. `| 0` converts `true` to `1` and `false` to `0`
+            this.players[playerId].score++;
             this.ball.vel.x = -this.ball.vel.x;
+            this.reset();
+        }
         if (this.ball.top  < 0 || this.ball.bottom > this._canvas.height)
             this.ball.vel.y = -this.ball.vel.y;
 
@@ -174,6 +210,20 @@ class Pong
         this._context.fillStyle = "#fff";
         this._context.fillRect(rect.left, rect.top, rect.size.x, rect.size.y);
     }
+
+    reset()
+    {
+        this.ball.setVelocity(0, 0);
+        this.ball.setPosition(this._canvas.width / 2, this._canvas.height / 2); // Center ball
+    }
+
+    start()
+    {
+        if (this.ball.vel.x === 0 && this.ball.vel.y === 0)
+        {
+            this.ball.setVelocity(300, 300);
+        }
+    }
 }
 
 
@@ -187,4 +237,8 @@ const pong = new Pong(canvas);
 
 canvas.addEventListener('mousemove', (event) => {
     pong.players[0].pos.y += (event.offsetY - pong.players[0].pos.y) * 0.3; // Limit movement speed a little
+});
+
+canvas.addEventListener('click', (event) => {
+    pong.start();
 });
