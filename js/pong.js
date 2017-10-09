@@ -14,6 +14,18 @@ class Vector
         this.x = x;
         this.y = y;
     }
+
+    get len()
+    {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    set len(value)
+    {
+        const fact = value / this.len;
+        this.x *= fact;
+        this.x *= fact;
+    }
 }
 
 class Rect
@@ -158,7 +170,7 @@ class Pong
 
 
         // Player 2 """"AI""""
-        this.players[1].pos.y += this.ball.vel.y * deltaTime * 0.65; // Move the paddle at a fraction of the ball speed
+        this.players[1].pos.y += this.ball.vel.y * deltaTime * 0.7; // Move the paddle at a fraction of the ball speed
     }
 
     collisionDetection()
@@ -166,7 +178,7 @@ class Pong
         // Flip velocities when the ball hits the edge
         if (this.ball.left < 0 || this.ball.right  > this._canvas.width)
         {
-            const playerId = this.ball.vel.x > 0 | 0; // If travelling to the right (positive) when a wall is hit, right player has missed the ball. `| 0` converts `true` to `1` and `false` to `0`
+            const playerId = this.ball.vel.x < 0 | 0; // If travelling to the right (positive) when a wall is hit, right player has missed the ball. `| 0` converts `true` to `1` and `false` to `0`
             this.players[playerId].score++;
             this.ball.vel.x = -this.ball.vel.x;
             this.reset();
@@ -215,13 +227,18 @@ class Pong
     {
         this.ball.setVelocity(0, 0);
         this.ball.setPosition(this._canvas.width / 2, this._canvas.height / 2); // Center ball
+        this.players[1].setPosition(this._canvas.width - 30, this._canvas.height / 2); // Reset to origin
     }
 
     start()
     {
         if (this.ball.vel.x === 0 && this.ball.vel.y === 0)
         {
-            this.ball.setVelocity(300, 300);
+            this.ball.setVelocity(
+                300 * (Math.random() > 0.5 ? 1 : -1),
+                300 * (Math.random() * 2 - 1)
+            );
+            this.ball.vel.len = 350; // Normalise scalar speed
         }
     }
 }
