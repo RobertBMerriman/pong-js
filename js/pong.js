@@ -158,6 +158,33 @@ class Pong
         // Start game callback loop
         requestAnimationFrame(callback);
 
+        this.NUM_PIXEL = 10;
+        this.NUMS = [
+            '111101101101111',
+            '010010010010010',
+            '111001111100111',
+            '111001111001111',
+            '101101111001001',
+            '111100111001111',
+            '111100111101111',
+            '111001001001001',
+            '111101111101111',
+            '111101111001011'
+        ].map(str => {
+            const canvas = document.createElement('canvas');
+            const s = this.NUM_PIXEL;
+            canvas.height = s * 5;
+            canvas.width = s * 3;
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#fff';
+            str.split('').forEach((fill, i) => {
+                if (fill === '1') {
+                    context.fillRect((i % 3) * s, (i / 3 | 0) * s, s, s);
+                }
+            });
+            return canvas;
+        });
+
         // Set ball to initial position
         this.reset();
     }
@@ -195,12 +222,21 @@ class Pong
                 player.bottom = this._canvas.height;
 
             // Paddle ball collision checks
-            if (player.left < this.ball.right  && player.right  > this.ball.left &&
-                player.top  < this.ball.bottom && player.bottom > this.ball.top)
-            {
-                this.ball.vel.x = (player.leftPlayer ? Math.abs(this.ball.vel.x) : -Math.abs(this.ball.vel.x));
-            }
+            this.ballCollision(player, this.ball);
         });
+    }
+
+    ballCollision(player, ball)
+    {
+        if (player.left < ball.right  && player.right  > ball.left &&
+            player.top  < ball.bottom && player.bottom > ball.top)
+        {
+            const len = ball.vel.len;
+
+            ball.vel.x = (player.leftPlayer ? Math.abs(ball.vel.x) : -Math.abs(ball.vel.x));
+            ball.vel.y = 300 * (Math.random() - 0.5);
+            ball.vel.len = len * 1.02;
+        }
     }
 
     // Game render function
@@ -214,13 +250,28 @@ class Pong
         // Draw ball
         this.drawRect(this.ball);
         // Draw all players in array
-        this.players.forEach((player) => this.drawRect(player)); // Arrow function
+        this.players.forEach((player) => this.drawRect(player));
+
+        this.drawScore();
     }
 
     drawRect(rect)
     {
         this._context.fillStyle = "#fff";
         this._context.fillRect(rect.left, rect.top, rect.size.x, rect.size.y);
+    }
+
+    drawScore()
+    {
+        const align = this._canvas.width / 3;
+        const cw = this.NUM_PIXEL * 4;
+        this.players.forEach((player, index) => {
+            const chars = player.score.toString().split('');
+            const offset = align * (index + 1) - (cw * chars.length / 2) + this.NUM_PIXEL / 2;
+            chars.forEach((char, pos) => {
+                this._context.drawImage(this.NUMS[char|0], offset + pos * cw, 20);
+            });
+        });
     }
 
     reset()
@@ -253,7 +304,8 @@ const canvas = document.getElementById("pong");
 const pong = new Pong(canvas);
 
 canvas.addEventListener('mousemove', (event) => {
-    pong.players[0].pos.y += (event.offsetY - pong.players[0].pos.y) * 0.3; // Limit movement speed a little
+    const scale = event.offsetY / event.target.getBoundingClientRect().height;
+    pong.players[0].pos.y += ((scale * canvas.height) - pong.players[0].pos.y) * 0.3; // Limit movement speed a little
 });
 
 canvas.addEventListener('click', (event) => {
