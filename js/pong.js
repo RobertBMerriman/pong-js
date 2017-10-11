@@ -129,27 +129,26 @@ class Pong
         // Instantiate ball
         this.ball = new Ball();
 
+        this._accumulator = 0;
+        this.step = 1/240;
+
         // Set up players array
         this.players = [
-            new Player(new Vector(30, this._canvas.height / 2), true),
-            new Player(new Vector(this._canvas.width - 30, this._canvas.height / 2), false)
+            new Player(new Vector(100, this._canvas.height / 2), true),
+            new Player(new Vector(this._canvas.width - 100, this._canvas.height / 2), false)
         ];
 
         // Create requestAnimationFrame callback game loop
         let lastTime;
+
         const callback = (millis) =>
         {
             if (lastTime)
             {
                 let deltaTime = (millis - lastTime) / 1000;
 
-                // If over half a second skip frame because something unwanted has happened eg lost focus etc
-                if (deltaTime < 0.5)
-                {
-                    this.update(deltaTime);
-                    this.collisionDetection();
-                    this.render();
-                }
+                this.update(deltaTime);
+                this.render();
             }
 
             lastTime = millis;
@@ -189,15 +188,27 @@ class Pong
         this.reset();
     }
 
-    // Game update method (`deltaTime` is in seconds)
     update(deltaTime)
     {
+        this._accumulator += deltaTime;
+        while (this._accumulator > this.step) {
+            this.simulate(this.step);
+            this._accumulator -= this.step;
+        }
+    }
+
+    // Game update method (`deltaTime` is in seconds)
+    simulate(deltaTime)
+    {
+        console.log("Del", deltaTime);
+
         this.ball.pos.x += this.ball.vel.x * deltaTime;
         this.ball.pos.y += this.ball.vel.y * deltaTime;
 
-
         // Player 2 """"AI""""
         this.players[1].pos.y += this.ball.vel.y * deltaTime * 0.7; // Move the paddle at a fraction of the ball speed
+
+        this.collisionDetection();
     }
 
     collisionDetection()
@@ -278,7 +289,7 @@ class Pong
     {
         this.ball.setVelocity(0, 0);
         this.ball.setPosition(this._canvas.width / 2, this._canvas.height / 2); // Center ball
-        this.players[1].setPosition(this._canvas.width - 30, this._canvas.height / 2); // Reset to origin
+        this.players[1].setPosition(this.players[1].position.x, this._canvas.height / 2); // Reset to origin
     }
 
     start()
